@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLAYGROUND — 작은 놀이터</title>
+
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#07080c;
+  --panel:#0e1016;
+  --panel2:#12151d;
+  --line:rgba(255,255,255,.08);
+  --text:#f5f7fb;
+  --muted:#8b92a3;
+  --purple:#8b7cff;
+  --blue:#63d8ff;
+  --green:#62e6a2;
+  --red:#ff667d;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(800px 450px at 50% -180px,rgba(139,124,255,.18),transparent 70%),
+    radial-gradient(500px 300px at 100% 40%,rgba(99,216,255,.06),transparent 70%),
+    var(--bg);
+  color:var(--text);
+  font-family:Arial,"Noto Sans KR",sans-serif;
+}
+
+button,input{
+  font:inherit;
+}
+
+button{
+  color:inherit;
+  cursor:pointer;
+}
+
+.container{
+  width:min(1180px,92%);
+  margin:auto;
+}
+
+/* HEADER */
+
+header{
+  height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--line);
+}
+
+.logo{
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:-.5px;
+}
+
+.logo span{
+  color:#9e94ff;
+}
+
+.stats{
+  display:flex;
+  gap:8px;
+}
+
+.stat{
+  padding:8px 12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.025);
+  border-radius:9px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stat b{
+  color:#fff;
+  margin-left:5px;
+}
+
+/* HERO */
+
+.hero{
+  padding:82px 0 55px;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border:1px solid rgba(139,124,255,.25);
+  background:rgba(139,124,255,.08);
+  color:#aaa1ff;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:bold;
+  margin-bottom:18px;
+}
+
+.hero h1{
+  margin:0;
+  font-size:clamp(44px,7vw,78px);
+  line-height:1;
+  letter-spacing:-5px;
+}
+
+.hero h1 span{
+  background:linear-gradient(90deg,#fff,#aaa1ff,#6bdcff);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.hero p{
+  margin-top:20px;
+  color:var(--muted);
+  line-height:1.7;
+  font-size:14px;
+}
+
+/* SECTION */
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  margin-bottom:16px;
+}
+
+.section-head h2{
+  margin:0;
+  font-size:17px;
+  letter-spacing:-.5px;
+}
+
+.section-head span{
+  color:var(--muted);
+  font-size:11px;
+}
+
+/* GAME GRID */
+
+.games{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  padding-bottom:70px;
+}
+
+.game-card{
+  position:relative;
+  overflow:hidden;
+  min-height:190px;
+  padding:21px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  transition:.2s;
+}
+
+.game-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,255,255,.17);
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.02));
+}
+
+.game-card:before{
+  content:"";
+  position:absolute;
+  width:170px;
+  height:170px;
+  left:-80px;
+  top:-80px;
+  background:rgba(139,124,255,.1);
+  filter:blur(45px);
+  pointer-events:none;
+}
+
+.game-number{
+  color:#777f91;
+  font-size:10px;
+  font-weight:bold;
+}
+
+.game-symbol{
+  width:38px;
+  height:38px;
+  margin-top:10px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:rgba(139,124,255,.09);
+  border:1px solid rgba(139,124,255,.15);
+  color:#a79fff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.game-card h3{
+  margin:14px 0 6px;
+  font-size:16px;
+}
+
+.game-card p{
+  margin:0 0 15px;
+  min-height:36px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+.play{
+  width:100%;
+  padding:10px;
+  border-radius:9px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  text-align:left;
+  font-size:12px;
+  font-weight:bold;
+  transition:.18s;
+}
+
+.play:hover{
+  background:rgba(139,124,255,.16);
+  border-color:rgba(139,124,255,.3);
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  place-items:center;
+  padding:18px;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(12px);
+  z-index:100;
+}
+
+.modal.active{
+  display:grid;
+}
+
+.modal-box{
+  width:min(560px,100%);
+  max-height:90vh;
+  overflow:auto;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;
+  background:#101218;
+  box-shadow:0 30px 100px rgba(0,0,0,.65);
+}
+
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.modal-header h2{
+  margin:0;
+  font-size:16px;
+}
+
+.close{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:rgba(255,255,255,.05);
+  padding:7px 10px;
+  color:var(--muted);
+}
+
+.game-area{
+  padding:25px 4px 5px;
+  text-align:center;
+}
+
+.game-area p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.big{
+  margin:25px 0;
+  font-size:48px;
+  font-weight:900;
+  letter-spacing:-2px;
+}
+
+.primary{
+  border:0;
+  border-radius:9px;
+  padding:12px 20px;
+  background:#f4f5f8;
+  color:#11131a;
+  font-weight:900;
+  font-size:13px;
+}
+
+.primary:hover{
+  background:#fff;
+}
+
+.primary:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.result{
+  min-height:48px;
+  margin:18px 0 5px;
+  line-height:1.6;
+  font-size:14px;
+}
+
+.good{color:var(--green)}
+.bad{color:var(--red)}
+
+input[type=number],
+input[type=text]{
+  width:100%;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  outline:none;
+  background:#090b10;
+  color:white;
+  text-align:center;
+}
+
+input:focus{
+  border-color:rgba(139,124,255,.5);
+}
+
+/* REACTION */
+
+.reaction-box{
+  height:180px;
+  display:grid;
+  place-items:center;
+  margin:15px 0;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#0a0c11;
+  font-size:50px;
+}
+
+/* METER */
+
+.meter{
+  height:8px;
+  overflow:hidden;
+  border-radius:99px;
+  background:rgba(255,255,255,.06);
+}
+
+.meter span{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,var(--purple),var(--blue));
+}
+
+/* TARGET */
+
+.board{
+  position:relative;
+  height:290px;
+  overflow:hidden;
+  margin:15px 0;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#090b10;
+}
+
+.target{
+  position:absolute;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  box-shadow:0 0 25px rgba(139,124,255,.45);
+}
+
+/* CHOICE */
+
+.choices{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:15px 0;
+}
+
+.choice{
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:rgba(255,255,255,.04);
+}
+
+.choice:hover{
+  background:rgba(255,255,255,.08);
+}
+
+/* CARDS */
+
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:18px 0;
+}
+
+.memory-card{
+  height:62px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#171a22;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.memory-card.open{
+  background:rgba(139,124,255,.15);
+  border-color:rgba(139,124,255,.35);
+}
+
+/* DODGE */
+
+.player{
+  position:absolute;
+  width:34px;
+  height:34px;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  border-radius:8px;
+  background:#fff;
+}
+
+.enemy{
+  position:absolute;
+  width:20px;
+  height:20px;
+  border-radius:5px;
+  background:var(--red);
+}
+
+/* ACHIEVEMENTS */
+
+.achievements{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+
+.achievement{
+  display:flex;
+  justify-content:space-between;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(255,255,255,.025);
+  font-size:12px;
+}
+
+.achievement.locked{
+  opacity:.3;
+}
+
+/* FOOTER */
+
+footer{
+  padding:0 0 35px;
+  text-align:center;
+  color:#555b69;
+  font-size:10px;
+}
+
+/* MOBILE */
+
+@media(max-width:800px){
+  .games{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .hero{
+    padding:65px 0 45px;
+  }
+}
+
+@media(max-width:520px){
+  .games{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    display:none;
+  }
+
+  .hero h1{
+    font-size:44px;
+    letter-spacing:-3px;
+  }
+
+  .card-grid{
+    gap:6px;
+  }
+
+  .memory-card{
+    height:55px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+  <div class="logo">PLAYGROUND <span>/ FUN</span></div>
+
+  <div class="stats">
+    <div class="stat">PLAY <b id="plays">0</b></div>
+    <div class="stat">BEST <b id="best">—</b></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="badge">NO LOGIN · NO DATABASE</div>
+
+  <h1>
+    심심할 틈 없는<br>
+    <span>작은 놀이터</span>
+  </h1>
+
+  <p>
+    그냥 하나 골라서 플레이하세요.<br>
+    기록과 업적은 이 브라우저에만 저장됩니다.
+  </p>
+</section>
+
+<div class="section-head">
+  <h2>GAME CENTER</h2>
+  <span>12 GAMES</span>
+</div>
+
+<main class="games">
+
+  <article class="game-card">
+    <div class="game-number">01</div>
+    <div class="game-symbol">REFLEX</div>
+    <h3>순발력 테스트</h3>
+    <p>화면이 바뀌는 순간 최대한 빠르게 클릭하세요.</p>
+    <button class="play" onclick="openGame('reaction')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">02</div>
+    <div class="game-symbol">MEMORY</div>
+    <h3>숫자 기억력</h3>
+    <p>잠깐 나타나는 숫자를 기억해서 입력하세요.</p>
+    <button class="play" onclick="openGame('memory')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">03</div>
+    <div class="game-symbol">LUCK</div>
+    <h3>운빨 판정기</h3>
+    <p>오늘 당신의 운을 0부터 100까지 판정합니다.</p>
+    <button class="play" onclick="openGame('luck')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">04</div>
+    <div class="game-symbol">GUESS</div>
+    <h3>숫자 맞히기</h3>
+    <p>1부터 100 사이의 숫자를 맞혀보세요.</p>
+    <button class="play" onclick="openGame('guess')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">05</div>
+    <div class="game-symbol">COLOR</div>
+    <h3>색깔 기억</h3>
+    <p>빛나는 버튼의 순서를 기억하고 따라 누르세요.</p>
+    <button class="play" onclick="openGame('color')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">06</div>
+    <div class="game-symbol">TIME</div>
+    <h3>10초 챌린지</h3>
+    <p>정확히 10.000초에 버튼을 멈춰보세요.</p>
+    <button class="play" onclick="openGame('ten')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">07</div>
+    <div class="game-symbol">TARGET</div>
+    <h3>타겟 클릭</h3>
+    <p>30초 동안 나타나는 타겟을 최대한 많이 잡으세요.</p>
+    <button class="play" onclick="openGame('target')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">08</div>
+    <div class="game-symbol">MATH</div>
+    <h3>계산 속도</h3>
+    <p>20초 동안 계산 문제를 최대한 많이 풀어보세요.</p>
+    <button class="play" onclick="openGame('math')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">09</div>
+    <div class="game-symbol">COIN</div>
+    <h3>동전 연속</h3>
+    <p>앞 또는 뒤를 골라 연속 성공 기록을 만드세요.</p>
+    <button class="play" onclick="openGame('coin')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">10</div>
+    <div class="game-symbol">MATCH</div>
+    <h3>카드 짝맞추기</h3>
+    <p>같은 숫자의 카드끼리 짝을 맞춰보세요.</p>
+    <button class="play" onclick="openGame('cards')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">11</div>
+    <div class="game-symbol">DODGE</div>
+    <h3>피하기</h3>
+    <p>떨어지는 장애물을 피해 최대한 오래 살아남으세요.</p>
+    <button class="play" onclick="openGame('dodge')">PLAY →</button>
+  </article>
+
+  <article class="game-card">
+    <div class="game-number">12</div>
+    <div class="game-symbol">RECORD</div>
+    <h3>업적</h3>
+    <p>게임을 플레이하면서 숨겨진 업적을 해금하세요.</p>
+    <button class="play" onclick="openGame('achievements')">VIEW →</button>
+  </article>
+
+</main>
+
+<footer>
+  LOCAL ONLY · DATABASE FREE · PLAYGROUND
+</footer>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h2 id="modalTitle">GAME</h2>
+      <button class="close" onclick="closeGame()">×</button>
+    </div>
+
+    <div id="gameContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   DATA
+========================= */
+
+let data = JSON.parse(
+  localStorage.getItem("playgroundData") ||
+  '{"plays":0,"best":null,"achievements":[]}'
+);
+
+function save(){
+  localStorage.setItem(
+    "playgroundData",
+    JSON.stringify(data)
+  );
+
+  document.getElementById("plays").textContent =
+    data.plays;
+
+  document.getElementById("best").textContent =
+    data.best === null ? "—" : data.best;
+}
+
+function addPlay(){
+  data.plays++;
+  save();
+}
+
+function unlock(id,name){
+
+  if(data.achievements.includes(id)) return;
+
+  data.achievements.push(id);
+  save();
+
+  setTimeout(()=>{
+    alert("업적 해금\n\n"+name);
+  },100);
+}
+
+save();
+
+
+/* =========================
+   MODAL
+========================= */
+
+function openGame(type){
+
+  document.getElementById("modal")
+    .classList.add("active");
+
+  const content =
+    document.getElementById("gameContent");
+
+  if(type==="reaction")
+    reactionGame(content);
+
+  else if(type==="memory")
+    memoryGame(content);
+
+  else if(type==="luck")
+    luckGame(content);
+
+  else if(type==="guess")
+    guessGame(content);
+
+  else if(type==="color")
+    colorGame(content);
+
+  else if(type==="ten")
+    tenGame(content);
+
+  else if(type==="target")
+    targetGame(content);
+
+  else if(type==="math")
+    mathGame(content);
+
+  else if(type==="coin")
+    coinGame(content);
+
+  else if(type==="cards")
+    cardsGame(content);
+
+  else if(type==="dodge")
+    dodgeGame(content);
+
+  else if(type==="achievements")
+    achievementsGame(content);
+}
+
+function closeGame(){
+
+  document.getElementById("modal")
+    .classList.remove("active");
+
+  document.getElementById("gameContent")
+    .innerHTML="";
+}
+
+document.getElementById("modal")
+.addEventListener("click",function(e){
+
+  if(e.target===this)
+    closeGame();
+
+});
+
+document.addEventListener("keydown",function(e){
+
+  if(e.key==="Escape")
+    closeGame();
+
+});
+
+
+/* =========================
+   01 REACTION
+========================= */
+
+function reactionGame(el){
+
+  let ready=false;
+  let start=0;
+  let timer;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        버튼을 누르면 시작됩니다.<br>
+        화면이 밝아지는 순간 클릭하세요.
+      </p>
+
+      <div class="reaction-box" id="reactionBox">
+        WAIT
+      </div>
+
+      <button class="primary" id="reactionButton">
+        START
+      </button>
+
+      <div class="result" id="reactionResult"></div>
+
+    </div>
+
+  `;
+
+  const button =
+    document.getElementById("reactionButton");
+
+  const box =
+    document.getElementById("reactionBox");
+
+  button.onclick=function(){
+
+    if(!ready){
+
+      button.disabled=true;
+      box.textContent="WAIT";
+
+      timer=setTimeout(()=>{
+
+        ready=true;
+        start=performance.now();
+
+        box.textContent="CLICK";
+        box.style.background=
+          "linear-gradient(135deg,#172d26,#10241d)";
+
+        button.disabled=false;
+        button.textContent="CLICK";
+
+      },800+Math.random()*3000);
+
+    }
+
+    else{
+
+      const ms=
+        Math.round(performance.now()-start);
+
+      addPlay();
+
+      if(data.best===null || ms<data.best){
+
+        data.best=ms;
+        save();
+
+      }
+
+      document.getElementById("reactionResult")
+        .innerHTML=
+        `<b>${ms}ms</b><br>
+        ${
+          ms<180
+          ? '<span class="good">미친 반응속도.</span>'
+          : ms<300
+          ? '<span class="good">상당히 빠름.</span>'
+          : '조금 더 연습해보자.'
+        }`;
+
+      if(ms<180)
+        unlock("speed","반응속도 인간병기");
+
+      button.textContent="RETRY";
+      button.onclick=()=>reactionGame(el);
+
+      ready=false;
+    }
+  };
+}
+
+
+/* =========================
+   02 MEMORY
+========================= */
+
+function memoryGame(el){
+
+  const number=
+    Math.floor(1000+Math.random()*9000);
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>이 숫자를 기억하세요.</p>
+
+      <div class="big" id="memoryNumber">
+        ${number}
+      </div>
+
+      <input
+        id="memoryInput"
+        type="number"
+        placeholder="숫자 입력"
+      >
+
+      <br><br>
+
+      <button
+        class="primary"
+        id="memoryButton"
+        style="display:none"
+      >
+        CHECK
+      </button>
+
+      <div class="result" id="memoryResult"></div>
+
+    </div>
+
+  `;
+
+  setTimeout(()=>{
+
+    document.getElementById("memoryNumber")
+      .textContent="????";
+
+    document.getElementById("memoryInput")
+      .style.display="block";
+
+    document.getElementById("memoryButton")
+      .style.display="inline-block";
+
+  },1400);
+
+  document.getElementById("memoryButton")
+  .onclick=function(){
+
+    const answer=
+      document.getElementById("memoryInput").value;
+
+    addPlay();
+
+    if(answer==number){
+
+      document.getElementById("memoryResult")
+        .innerHTML=
+        '<span class="good">정답입니다.</span>';
+
+      unlock("memory","기억력 만렙");
+
+    }
+
+    else{
+
+      document.getElementById("memoryResult")
+        .innerHTML=
+        `오답<br>정답은 <b>${number}</b>`;
+
+    }
+
+  };
+}
+
+
+/* =========================
+   03 LUCK
+========================= */
+
+function luckGame(el){
+
+  const score=
+    Math.floor(Math.random()*101);
+
+  const messages=[
+    "오늘은 뭔가 잘 풀릴지도.",
+    "평범한 하루입니다.",
+    "조금 조심하는 게 좋겠습니다.",
+    "좋은 일이 생길 수도 있습니다.",
+    "게임 운이 상당히 좋습니다.",
+    "오늘은 선택을 잘해야 합니다.",
+    "운이 당신 편입니다."
+  ];
+
+  const message=
+    messages[Math.floor(
+      Math.random()*messages.length
+    )];
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>오늘의 운을 판정합니다.</p>
+
+      <div class="big">${score}</div>
+
+      <div class="meter">
+        <span style="width:${score}%"></span>
+      </div>
+
+      <div class="result">
+        ${message}
+      </div>
+
+      <button
+        class="primary"
+        onclick="luckGame(document.getElementById('gameContent'))"
+      >
+        AGAIN
+      </button>
+
+    </div>
+
+  `;
+
+  addPlay();
+
+  if(score===100)
+    unlock("luck100","운빨 100점");
+}
+
+
+/* =========================
+   04 GUESS
+========================= */
+
+function guessGame(el){
+
+  const target=
+    Math.floor(Math.random()*100)+1;
+
+  let count=0;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>1부터 100 사이의 숫자입니다.</p>
+
+      <input
+        id="guessInput"
+        type="number"
+        min="1"
+        max="100"
+        placeholder="숫자"
+      >
+
+      <br><br>
+
+      <button class="primary" id="guessButton">
+        GUESS
+      </button>
+
+      <div class="result" id="guessResult">
+        시작!
+      </div>
+
+    </div>
+
+  `;
+
+  const input=
+    document.getElementById("guessInput");
+
+  const button=
+    document.getElementById("guessButton");
+
+  function check(){
+
+    const value=
+      Number(input.value);
+
+    if(!value) return;
+
+    count++;
+
+    const result=
+      document.getElementById("guessResult");
+
+    if(value===target){
+
+      result.innerHTML=
+        `<span class="good">
+        정답! ${count}번 만에 성공
+        </span>`;
+
+      addPlay();
+
+      if(count<=5)
+        unlock("guess5","감으로 5번 이내");
+
+      button.textContent="RETRY";
+      button.onclick=()=>guessGame(el);
+
+    }
+
+    else if(value<target)
+      result.textContent="더 큰 숫자";
+
+    else
+      result.textContent="더 작은 숫자";
+  }
+
+  button.onclick=check;
+
+  input.onkeydown=e=>{
+    if(e.key==="Enter")
+      check();
+  };
+}
+
+
+/* =========================
+   05 COLOR
+========================= */
+
+function colorGame(el){
+
+  const colors=[
+    "#ff5570",
+    "#6d8cff",
+    "#58d99b",
+    "#ffd25a"
+  ];
+
+  let sequence=[];
+  let user=[];
+  let showing=true;
+
+  for(let i=0;i<4;i++)
+    sequence.push(
+      Math.floor(Math.random()*4)
+    );
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>빛나는 순서를 기억하세요.</p>
+
+      <div class="choices" id="colorButtons">
+
+        ${colors.map((c,i)=>`
+          <button
+            class="choice"
+            data-index="${i}"
+            style="
+              height:80px;
+              background:${c}22;
+            "
+          ></button>
+        `).join("")}
+
+      </div>
+
+      <div class="result" id="colorResult">
+        WATCH
+      </div>
+
+    </div>
+
+  `;
+
+  const buttons=
+    [...document.querySelectorAll(
+      "#colorButtons .choice"
+    )];
+
+  let pos=0;
+
+  function flash(){
+
+    if(pos>=sequence.length){
+
+      showing=false;
+
+      document.getElementById("colorResult")
+        .textContent="YOUR TURN";
+
+      return;
+    }
+
+    const b=
+      buttons[sequence[pos]];
+
+    b.style.transform="scale(.92)";
+    b.style.filter="brightness(2)";
+
+    setTimeout(()=>{
+
+      b.style.transform="";
+      b.style.filter="";
+
+      pos++;
+      setTimeout(flash,180);
+
+    },400);
+  }
+
+  flash();
+
+  buttons.forEach((button,i)=>{
+
+    button.onclick=function(){
+
+      if(showing) return;
+
+      user.push(i);
+
+      const index=user.length-1;
+
+      if(user[index]!==sequence[index]){
+
+        document.getElementById("colorResult")
+          .innerHTML=
+          '<span class="bad">실패. 다시 도전하세요.</span>';
+
+        addPlay();
+
+        setTimeout(
+          ()=>colorGame(el),
+          700
+        );
+
+        return;
+      }
+
+      if(user.length===sequence.length){
+
+        document.getElementById("colorResult")
+          .innerHTML=
+          '<span class="good">성공.</span>';
+
+        addPlay();
+
+        unlock("color","색깔 마스터");
+
+        setTimeout(
+          ()=>colorGame(el),
+          900
+        );
+
+      }
+
+    };
+
+  });
+}
+
+
+/* =========================
+   06 10 SECOND
+========================= */
+
+function tenGame(el){
+
+  let running=false;
+  let start=0;
+  let interval;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        정확히 10.000초에 멈춰보세요.
+      </p>
+
+      <div class="big" id="tenTime">
+        0.000
+      </div>
+
+      <button
+        class="primary"
+        id="tenButton"
+      >
+        START
+      </button>
+
+      <div class="result" id="tenResult"></div>
+
+    </div>
+
+  `;
+
+  const button=
+    document.getElementById("tenButton");
+
+  button.onclick=function(){
+
+    if(!running){
+
+      running=true;
+      start=performance.now();
+
+      button.textContent="STOP";
+
+      interval=setInterval(()=>{
+
+        const time=
+          (performance.now()-start)/1000;
+
+        document.getElementById("tenTime")
+          .textContent=time.toFixed(3);
+
+      },20);
+
+    }
+
+    else{
+
+      clearInterval(interval);
+
+      running=false;
+
+      const time=
+        (performance.now()-start)/1000;
+
+      const error=
+        Math.abs(time-10);
+
+      addPlay();
+
+      document.getElementById("tenResult")
+        .innerHTML=
+        `${time.toFixed(3)}초<br>
+        오차 <b>${error.toFixed(3)}초</b>`;
+
+      if(error<.05)
+        unlock("ten","시간 감각 미쳤다");
+
+      button.textContent="RETRY";
+      button.onclick=()=>tenGame(el);
+
+    }
+
+  };
+}
+
+
+/* =========================
+   07 TARGET
+========================= */
+
+function targetGame(el){
+
+  let score=0;
+  let time=30;
+  let timer;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        30초 동안 타겟을 최대한 많이 클릭하세요.
+      </p>
+
+      <div class="board" id="targetBoard"></div>
+
+      <div class="result">
+        남은 시간
+        <b id="targetTime">30</b>
+        초 · 점수
+        <b id="targetScore">0</b>
+      </div>
+
+    </div>
+
+  `;
+
+  const board=
+    document.getElementById("targetBoard");
+
+  function spawn(){
+
+    const target=
+      document.createElement("button");
+
+    target.className="target";
+
+    target.style.left=
+      Math.random()*
+      Math.max(1,board.clientWidth-40)
+      +"px";
+
+    target.style.top=
+      Math.random()*
+      Math.max(1,board.clientHeight-40)
+      +"px";
+
+    target.onclick=function(){
+
+      score++;
+
+      document.getElementById("targetScore")
+        .textContent=score;
+
+      target.remove();
+
+      spawn();
+
+    };
+
+    board.appendChild(target);
+  }
+
+  spawn();
+
+  timer=setInterval(()=>{
+
+    time--;
+
+    document.getElementById("targetTime")
+      .textContent=time;
+
+    if(time<=0){
+
+      clearInterval(timer);
+      board.innerHTML="";
+      addPlay();
+
+      if(score>=25)
+        unlock("target","타겟 헌터");
+
+    }
+
+  },1000);
+}
+
+
+/* =========================
+   08 MATH
+========================= */
+
+function mathGame(el){
+
+  let score=0;
+  let time=20;
+  let a,b,answer;
+  let timer;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        20초 동안 최대한 많이 맞혀보세요.
+      </p>
+
+      <div class="big" id="mathQuestion"></div>
+
+      <input
+        id="mathInput"
+        type="number"
+        placeholder="답"
+      >
+
+      <br><br>
+
+      <button
+        class="primary"
+        id="mathButton"
+      >
+        SUBMIT
+      </button>
+
+      <div class="result">
+        남은 시간
+        <b id="mathTime">20</b>
+        초 · 정답
+        <b id="mathScore">0</b>
+      </div>
+
+    </div>
+
+  `;
+
+  function newQuestion(){
+
+    a=Math.floor(Math.random()*20)+1;
+    b=Math.floor(Math.random()*20)+1;
+
+    if(Math.random()<.5){
+
+      answer=a+b;
+
+      document.getElementById("mathQuestion")
+        .textContent=`${a} + ${b} = ?`;
+
+    }
+
+    else{
+
+      answer=a-b;
+
+      document.getElementById("mathQuestion")
+        .textContent=`${a} - ${b} = ?`;
+
+    }
+
+    document.getElementById("mathInput")
+      .value="";
+
+  }
+
+  newQuestion();
+
+  function submit(){
+
+    const value=
+      Number(
+        document.getElementById("mathInput").value
+      );
+
+    if(value===answer){
+
+      score++;
+
+      document.getElementById("mathScore")
+        .textContent=score;
+
+      newQuestion();
+
+    }
+
+  }
+
+  document.getElementById("mathButton")
+    .onclick=submit;
+
+  document.getElementById("mathInput")
+    .onkeydown=e=>{
+      if(e.key==="Enter")
+        submit();
+    };
+
+  timer=setInterval(()=>{
+
+    time--;
+
+    document.getElementById("mathTime")
+      .textContent=time;
+
+    if(time<=0){
+
+      clearInterval(timer);
+      addPlay();
+
+      document.getElementById("mathButton")
+        .disabled=true;
+
+      document.getElementById("mathQuestion")
+        .textContent="TIME UP";
+
+      if(score>=15)
+        unlock("math","암산 머신");
+
+    }
+
+  },1000);
+}
+
+
+/* =========================
+   09 COIN
+========================= */
+
+function coinGame(el){
+
+  let streak=0;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        동전이 앞인지 뒤인지 예측하세요.
+      </p>
+
+      <div class="big" id="coinResult">
+        ?
+      </div>
+
+      <div class="choices">
+
+        <button
+          class="choice"
+          id="heads"
+        >
+          앞
+        </button>
+
+        <button
+          class="choice"
+          id="tails"
+        >
+          뒤
+        </button>
+
+      </div>
+
+      <div class="result">
+        연속 성공:
+        <b id="coinStreak">0</b>
+      </div>
+
+    </div>
+
+  `;
+
+  function toss(choice){
+
+    const result=
+      Math.random()<.5 ? "앞" : "뒤";
+
+    document.getElementById("coinResult")
+      .textContent=result;
+
+    if(choice===result){
+
+      streak++;
+
+      document.getElementById("coinStreak")
+        .textContent=streak;
+
+      if(streak>=10)
+        unlock("coin10","운빨 10연승");
+
+    }
+
+    else{
+
+      streak=0;
+
+      document.getElementById("coinStreak")
+        .textContent=0;
+
+    }
+
+    addPlay();
+
+  }
+
+  document.getElementById("heads")
+    .onclick=()=>toss("앞");
+
+  document.getElementById("tails")
+    .onclick=()=>toss("뒤");
+}
+
+
+/* =========================
+   10 MEMORY CARDS
+========================= */
+
+function cardsGame(el){
+
+  const values=[
+    1,1,2,2,
+    3,3,4,4
+  ].sort(
+    ()=>Math.random()-.5
+  );
+
+  let opened=[];
+  let complete=0;
+  let locked=false;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        같은 숫자 두 장을 찾아보세요.
+      </p>
+
+      <div
+        class="card-grid"
+        id="memoryCards"
+      ></div>
+
+      <div class="result" id="cardResult">
+        0 / 4
+      </div>
+
+    </div>
+
+  `;
+
+  const grid=
+    document.getElementById("memoryCards");
+
+  values.forEach((value,index)=>{
+
+    const button=
+      document.createElement("button");
+
+    button.className="memory-card";
+    button.textContent="?";
+
+    button.onclick=function(){
+
+      if(
+        locked ||
+        button.dataset.done ||
+        opened.some(x=>x.index===index)
+      )
+        return;
+
+      button.textContent=value;
+      button.classList.add("open");
+
+      opened.push({
+        index,
+        button
+      });
+
+      if(opened.length===2){
+
+        if(
+          values[opened[0].index] ===
+          values[opened[1].index]
+        ){
+
+          opened.forEach(x=>{
+            x.button.dataset.done="1";
+          });
+
+          opened=[];
+          complete++;
+
+          document.getElementById("cardResult")
+            .textContent=`${complete} / 4`;
+
+          if(complete===4){
+
+            addPlay();
+
+            unlock(
+              "cards",
+              "기억력 카드왕"
+            );
+
+          }
+
+        }
+
+        else{
+
+          locked=true;
+
+          setTimeout(()=>{
+
+            opened.forEach(x=>{
+
+              x.button.textContent="?";
+              x.button.classList.remove("open");
+
+            });
+
+            opened=[];
+            locked=false;
+
+          },600);
+
+        }
+
+      }
+
+    };
+
+    grid.appendChild(button);
+
+  });
+}
+
+
+/* =========================
+   11 DODGE
+========================= */
+
+function dodgeGame(el){
+
+  let playerX=50;
+  let seconds=0;
+  let running=true;
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        방향키 또는 A / D로 움직이세요.
+      </p>
+
+      <div
+        class="board"
+        id="dodgeBoard"
+      >
+
+        <div
+          class="player"
+          id="dodgePlayer"
+        ></div>
+
+      </div>
+
+      <div class="result">
+        생존:
+        <b id="dodgeScore">0</b>초
+      </div>
+
+    </div>
+
+  `;
+
+  const board=
+    document.getElementById("dodgeBoard");
+
+  const player=
+    document.getElementById("dodgePlayer");
+
+  function move(e){
+
+    if(!running)
+      return;
+
+    if(
+      e.key==="ArrowLeft" ||
+      e.key.toLowerCase()==="a"
+    )
+      playerX=Math.max(
+        5,
+        playerX-7
+      );
+
+    if(
+      e.key==="ArrowRight" ||
+      e.key.toLowerCase()==="d"
+    )
+      playerX=Math.min(
+        95,
+        playerX+7
+      );
+
+    player.style.left=
+      playerX+"%";
+  }
+
+  document.addEventListener(
+    "keydown",
+    move
+  );
+
+  const scoreTimer=
+    setInterval(()=>{
+
+      if(!running)
+        return;
+
+      seconds++;
+
+      document.getElementById("dodgeScore")
+        .textContent=seconds;
+
+      if(seconds>=30){
+
+        end(true);
+
+      }
+
+    },1000);
+
+  const spawnTimer=
+    setInterval(()=>{
+
+      if(!running)
+        return;
+
+      createEnemy();
+
+    },650);
+
+  function createEnemy(){
+
+    const enemy=
+      document.createElement("div");
+
+    enemy.className="enemy";
+
+    enemy.style.left=
+      Math.random()*
+      Math.max(
+        1,
+        board.clientWidth-20
+      )+"px";
+
+    enemy.style.top="-25px";
+
+    board.appendChild(enemy);
+
+    let y=-25;
+
+    const moveTimer=
+      setInterval(()=>{
+
+        if(!running){
+
+          clearInterval(moveTimer);
+          enemy.remove();
+          return;
+
+        }
+
+        y+=5;
+
+        enemy.style.top=
+          y+"px";
+
+        const playerCenter=
+          board.clientWidth*
+          playerX/100;
+
+        const enemyX=
+          enemy.offsetLeft;
+
+        if(
+          y>board.clientHeight-65 &&
+          Math.abs(enemyX-playerCenter)<35
+        ){
+
+          clearInterval(moveTimer);
+          enemy.remove();
+          end(false);
+          return;
+
+        }
+
+        if(y>board.clientHeight){
+
+          clearInterval(moveTimer);
+          enemy.remove();
+
+        }
+
+      },30);
+
+  }
+
+  function end(win){
+
+    if(!running)
+      return;
+
+    running=false;
+
+    clearInterval(scoreTimer);
+    clearInterval(spawnTimer);
+
+    document.removeEventListener(
+      "keydown",
+      move
+    );
+
+    addPlay();
+
+    if(win){
+
+      unlock(
+        "dodge",
+        "30초 생존"
+      );
+
+      alert("성공!\n30초 생존했습니다.");
+
+    }
+
+    else{
+
+      alert(
+        "게임 오버\n\n생존 시간: "+
+        seconds+
+        "초"
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   12 ACHIEVEMENTS
+========================= */
+
+function achievementsGame(el){
+
+  const list=[
+
+    ["speed","반응속도 인간병기"],
+    ["memory","기억력 만렙"],
+    ["luck100","운빨 100점"],
+    ["guess5","감으로 5번 이내"],
+    ["color","색깔 마스터"],
+    ["ten","시간 감각 미쳤다"],
+    ["target","타겟 헌터"],
+    ["math","암산 머신"],
+    ["coin10","운빨 10연승"],
+    ["cards","기억력 카드왕"],
+    ["dodge","30초 생존"]
+
+  ];
+
+  el.innerHTML=`
+
+    <div class="game-area">
+
+      <p>
+        게임을 플레이하면서 업적을 해금하세요.
+      </p>
+
+      <div class="achievements">
+
+        ${list.map(item=>{
+
+          const unlocked=
+            data.achievements.includes(item[0]);
+
+          return `
+
+            <div
+              class="achievement
+              ${unlocked?"":"locked"}"
+            >
+
+              <span>
+                ${unlocked?"UNLOCKED":"LOCKED"}
+              </span>
+
+              <b>
+                ${item[1]}
+              </b>
+
+            </div>
+
+          `;
+
+        }).join("")}
+
+      </div>
+
+      <div class="result">
+
+        ${data.achievements.length}
+        /
+        ${list.length}
+        해금
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================
+   SECRET KEY
+========================= */
+
+let secretCount=0;
+
+document.addEventListener(
+  "keydown",
+  e=>{
+
+    if(
+      e.key.toLowerCase()==="k"
+    ){
+
+      secretCount++;
+
+      if(secretCount>=5){
+
+        unlock(
+          "secret",
+          "숨겨진 K"
+        );
+
+        secretCount=0;
+
+      }
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
