@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0E1016"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⛏ 마크 서버"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#62E6A2"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#63D8FF"
+        android:textIsSelectable="true"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/typePaper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Paper (가벼움·플러그인)"
+                android:textColor="#F5F7FB" />
+            <RadioButton
+                android:id="@+id/typeVanilla"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="바닐라"
+                android:textColor="#F5F7FB" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="버전"
+                android:textColor="#8B92A3" />
+            <EditText
+                android:id="@+id/version"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="예: 1.21.1"
+                android:inputType="text"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#555" />
+            <Button
+                android:id="@+id/latest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="최신" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="RAM(MB)"
+                android:textColor="#8B92A3" />
+            <EditText
+                android:id="@+id/ram"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:textColor="#FFFFFF" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:text="포트"
+                android:textColor="#8B92A3" />
+            <EditText
+                android:id="@+id/port"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/eula"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="마인크래프트 EULA(aka.ms/MinecraftEULA)에 동의합니다"
+            android:textColor="#F5F7FB"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="▶ 서버 시작" />
+        <Button
+            android:id="@+id/stop"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="■ 서버 정지" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/consoleScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:background="#07080C"
+        android:padding="6dp">
+        <TextView
+            android:id="@+id/console"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textColor="#D0D4DE"
+            android:textIsSelectable="true"
+            android:textSize="11sp" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/command"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="명령어 (예: op 닉네임, say 안녕)"
+            android:imeOptions="actionSend"
+            android:inputType="text"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#555" />
+        <Button
+            android:id="@+id/send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="전송" />
+    </LinearLayout>
+</LinearLayout>

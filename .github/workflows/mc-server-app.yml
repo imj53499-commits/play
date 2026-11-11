@@ -1,0 +1,50 @@
+name: 마크 서버 앱 APK 빌드
+
+on:
+  push:
+    paths:
+      - "mc-server-app/**"
+      - ".github/workflows/mc-server-app.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mc-server-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Java 런타임(OpenJDK 21, Android용) 준비
+        run: python3 scripts/build_runtime.py app/src/main/assets/runtime.zip
+
+      - name: APK 빌드
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk McServer.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: McServer-apk
+          path: mc-server-app/McServer.apk
+
+      - name: 릴리스에 APK 올리기 (폰에서 바로 다운로드용)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mc-server-app-latest
+          name: 마크 서버 앱 (최신 빌드)
+          prerelease: true
+          files: mc-server-app/McServer.apk
+          body: |
+            폰에서 McServer.apk 를 받아 설치하세요. (arm64 기기용)
+            커밋: ${{ github.sha }}
