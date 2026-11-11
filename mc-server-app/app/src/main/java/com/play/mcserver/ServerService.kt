@@ -15,6 +15,7 @@ import android.os.PowerManager
 class ServerService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
+    private var lowLatencyLock: WifiManager.WifiLock? = null
     private val listener: (ServerState) -> Unit = { s ->
         if (s == ServerState.STOPPED) stopSelf() else updateNotification(s)
     }
@@ -31,9 +32,18 @@ class ServerService : Service() {
 
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager)
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "mcserver:server").apply { acquire() }
+        // 와이파이 절전 모드를 끔. 절전 모드에서는 패킷이 100~300ms씩 묶여서 핑이 튐
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
-        wifiLock = (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager)
-            .createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "mcserver:wifi").apply { acquire() }
+        wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "mcserver:wifi").apply {
+            setReferenceCounted(false); acquire()
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            // 안드로이드 10+ : 저지연 모드 (앱 화면이 켜져 있을 때 가장 효과적)
+            lowLatencyLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "mcserver:lowlatency").apply {
+                setReferenceCounted(false); acquire()
+            }
+        }
 
         ServerManager.addStateListener(listener)
     }
@@ -47,6 +57,7 @@ class ServerService : Service() {
         ServerManager.removeStateListener(listener)
         wakeLock?.takeIf { it.isHeld }?.release()
         wifiLock?.takeIf { it.isHeld }?.release()
+        lowLatencyLock?.takeIf { it.isHeld }?.release()
         super.onDestroy()
     }
 

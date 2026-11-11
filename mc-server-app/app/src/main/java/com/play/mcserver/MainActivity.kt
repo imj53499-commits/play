@@ -177,6 +177,10 @@ class MainActivity : Activity() {
         publicBox.visibility = if (pub != null && s == ServerState.RUNNING) View.VISIBLE else View.GONE
         publicAddress.text = "🌍 외부 접속 주소: $pub"
 
+        // 서버가 도는 동안 앱 화면을 켜두면 와이파이 저지연 모드와 CPU 성능이 유지됨
+        if (s == ServerState.RUNNING) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         val idle = s == ServerState.STOPPED
         settings.isEnabled = idle
         listOf(version, ram, port, eula, tunnel).forEach { it.isEnabled = idle }
