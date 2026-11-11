@@ -80,7 +80,6 @@ object ServerManager {
                 val jar = Downloader.ensureServerJar(dir, cfg) { log(it) }
                 prepareFiles(dir, cfg)
                 launch(app, runtime, dir, jar, cfg)
-                if (cfg.tunnel) startTunnel(app, cfg.port)
             } catch (t: Throwable) {
                 log("[앱] 오류: ${t.message ?: t.javaClass.simpleName}")
                 setState(ServerState.STOPPED)
@@ -143,10 +142,17 @@ object ServerManager {
         process = p
         stdin = OutputStreamWriter(p.outputStream, Charsets.UTF_8)
         setState(ServerState.RUNNING)
+        // 출력 스레드보다 먼저 터널을 열어야, 서버가 바로 꺼져도 터널이 같이 정리됨
+        if (cfg.tunnel) startTunnel(ctx, cfg.port)
 
         Thread({
             try {
-                p.inputStream.bufferedReader(Charsets.UTF_8).forEachLine { log(it) }
+                p.inputStream.bufferedReader(Charsets.UTF_8).forEachLine {
+                    log(it)
+                    if (it.contains("requires running the server with Java")) {
+                        log("[앱] ⚠ 이 마크 버전은 앱에 들어있는 Java보다 새 Java가 필요해요. 버전을 낮추거나 앱을 업데이트하세요.")
+                    }
+                }
             } catch (_: Exception) {
             }
             val code = try { p.waitFor() } catch (_: InterruptedException) { -1 }
@@ -160,7 +166,6 @@ object ServerManager {
     }
 
     private fun startTunnel(ctx: Context, port: Int) {
-        if (state != ServerState.RUNNING) return
         val prefs = ctx.getSharedPreferences("cfg", Context.MODE_PRIVATE)
         log("[터널] 외부 접속용 터널 여는 중... (${BoreTunnel.DEFAULT_HOST})")
         tunnel = BoreTunnel(
@@ -169,7 +174,7 @@ object ServerManager {
             preferredPort = prefs.getInt("tunnelPort", 0),
             log = { log(it) },
             onAddress = { addr ->
-                publicAddress = addr
+                publicAddress = if (state == ServerState.RUNNING) addr else null
                 addr?.substringAfterLast(":")?.toIntOrNull()?.let {
                     prefs.edit().putInt("tunnelPort", it).apply()
                 }
@@ -206,10 +211,14 @@ object ServerManager {
     fun localAddresses(): List<String> = try {
         NetworkInterface.getNetworkInterfaces().toList()
             .filter { it.isUp && !it.isLoopback }
+            // 와이파이(wlan), 핫스팟(ap/swlan), USB 테더링(rndis), 유선(eth)만.
+            // rmnet/ccmni/clat 같은 모바일 데이터 인터페이스는 외부에서 접속 불가라 제외
+            .filter { ni -> listOf("wlan", "swlan", "ap", "rndis", "eth").any { ni.name.startsWith(it) } }
             .flatMap { it.inetAddresses.toList() }
             .filterIsInstance<Inet4Address>()
             .map { it.hostAddress ?: "" }
-            .filter { it.isNotEmpty() }
+            .filter { it.isNotEmpty() && !it.startsWith("192.0.0.") }
+            .distinct()
     } catch (_: Exception) {
         emptyList()
     }

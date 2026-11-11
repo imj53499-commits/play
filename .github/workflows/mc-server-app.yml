@@ -24,7 +24,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Java 런타임(OpenJDK 21, Android용) 준비
+      - name: Java 런타임(최신 OpenJDK, Android용) 준비
         run: python3 scripts/build_runtime.py app/src/main/assets/runtime.zip
 
       - name: APK 빌드

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Termux 저장소에서 Android(bionic)용 OpenJDK 21 과 그 의존 라이브러리를 받아
+"""Termux 저장소에서 Android(bionic)용 최신 OpenJDK(25+) 와 그 의존 라이브러리를 받아
 앱 assets/runtime.zip 으로 묶는다.
 
 결과 zip 구조:
@@ -9,6 +9,7 @@
 GitHub Actions(ubuntu)에서 실행: python3 scripts/build_runtime.py <출력 zip 경로>
 """
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -17,7 +18,6 @@ import zipfile
 
 REPO = "https://packages-cf.termux.dev/apt/termux-main"
 ARCH = "aarch64"
-ROOT_PKG = "openjdk-21"
 PREFIX = "data/data/com.termux/files/usr"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -105,7 +105,17 @@ def main():
 
     print("Termux 패키지 목록 받는 중...")
     pkgs = parse_packages(fetch(f"{REPO}/dists/stable/main/binary-{ARCH}/Packages").decode())
-    needed = resolve(pkgs, ROOT_PKG)
+    # 가장 최신 OpenJDK (예: openjdk-25) 를 고름. MC 26.1+ 는 Java 25 이상 필요
+    jdk_pkgs = sorted(
+        (int(m.group(1)), name) for name in pkgs
+        for m in [re.fullmatch(r"openjdk-(\d+)", name)] if m
+    )
+    print("사용 가능한 JDK:", [n for _, n in jdk_pkgs])
+    if not jdk_pkgs or jdk_pkgs[-1][0] < 25:
+        sys.exit("Java 25 이상 패키지를 찾을 수 없음")
+    jdk_ver, root_pkg = jdk_pkgs[-1]
+    print("선택:", root_pkg)
+    needed = resolve(pkgs, root_pkg)
     print("필요한 패키지:", ", ".join(needed))
 
     for name in needed:
@@ -117,7 +127,7 @@ def main():
 
     usr = os.path.join(rootfs, PREFIX)
     jvm_root = os.path.join(usr, "lib", "jvm")
-    jdks = [d for d in os.listdir(jvm_root) if "21" in d]
+    jdks = [d for d in os.listdir(jvm_root) if str(jdk_ver) in d]
     if not jdks:
         sys.exit(f"JDK 디렉터리를 찾을 수 없음: {os.listdir(jvm_root)}")
     jdk = os.path.join(jvm_root, jdks[0])

@@ -64,6 +64,7 @@ class BoreTunnel(
                 val port = numberField(hello, "Hello") ?: throw RuntimeException("알 수 없는 응답: $hello")
                 wanted = port
                 val address = "$host:$port"
+                if (!running.get()) break
                 log("[터널] 외부 접속 주소: $address")
                 onAddress(address)
 
