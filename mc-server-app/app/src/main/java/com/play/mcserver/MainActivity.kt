@@ -79,7 +79,7 @@ class MainActivity : Activity() {
         tunnel.isChecked = prefs.getBoolean("tunnel", true)
 
         findViewById<Button>(R.id.copy).setOnClickListener {
-            val addr = ServerManager.publicAddress ?: return@setOnClickListener
+            val addr = ServerManager.directAddress ?: ServerManager.publicAddress ?: return@setOnClickListener
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
             cm.setPrimaryClip(android.content.ClipData.newPlainText("서버 주소", addr))
             toast("복사됨: $addr — 친구에게 보내주세요!")
@@ -174,8 +174,12 @@ class MainActivity : Activity() {
         else "같은 와이파이에서 접속: " + ips.joinToString("  ") { "$it:$p" }
 
         val pub = ServerManager.publicAddress
-        publicBox.visibility = if (pub != null && s == ServerState.RUNNING) View.VISIBLE else View.GONE
-        publicAddress.text = "🌍 외부 접속 주소: $pub"
+        val direct = ServerManager.directAddress
+        publicBox.visibility = if ((pub != null || direct != null) && s == ServerState.RUNNING) View.VISIBLE else View.GONE
+        publicAddress.text = listOfNotNull(
+            direct?.let { "⚡ 직접 접속(핑 낮음): $it" },
+            pub?.let { if (direct != null) "🌍 안 되면 중계 주소: $it" else "🌍 외부 접속 주소(중계): $it" },
+        ).joinToString("\n")
 
         // 서버가 도는 동안 앱 화면을 켜두면 와이파이 저지연 모드와 CPU 성능이 유지됨
         if (s == ServerState.RUNNING) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

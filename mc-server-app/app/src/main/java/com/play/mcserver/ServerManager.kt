@@ -41,6 +41,12 @@ object ServerManager {
 
     private var process: Process? = null
     @Volatile private var tunnel: BoreTunnel? = null
+    @Volatile private var upnp: Upnp? = null
+    @Volatile private var upnpPort = 0
+
+    /** 공유기 포트가 열렸을 때 중계 없이 직접 접속하는 주소 (핑 낮음). 없으면 null */
+    @Volatile var directAddress: String? = null
+        private set
 
     /** 외부(다른 IP)에서 접속할 수 있는 터널 주소. 없으면 null */
     @Volatile var publicAddress: String? = null
@@ -143,7 +149,10 @@ object ServerManager {
         stdin = OutputStreamWriter(p.outputStream, Charsets.UTF_8)
         setState(ServerState.RUNNING)
         // 출력 스레드보다 먼저 터널을 열어야, 서버가 바로 꺼져도 터널이 같이 정리됨
-        if (cfg.tunnel) startTunnel(ctx, cfg.port)
+        if (cfg.tunnel) {
+            startTunnel(ctx, cfg.port)
+            Thread({ openRouterPort(cfg.port) }, "upnp").start()
+        }
 
         Thread({
             try {
@@ -159,10 +168,51 @@ object ServerManager {
             log("[앱] 서버가 종료됨 (코드 $code)")
             tunnel?.stop()
             tunnel = null
+            closeRouterPort()
             process = null
             stdin = null
             setState(ServerState.STOPPED)
         }, "mc-output").start()
+    }
+
+    private fun openRouterPort(port: Int) {
+        val ip = localAddresses().firstOrNull { Upnp.isPrivate(it) } ?: return // 와이파이 아님
+        try {
+            log("[공유기] 포트 자동 열기 시도 중... (UPnP)")
+            val u = Upnp(ip)
+            if (u.discover() == null) {
+                log("[공유기] UPnP 공유기를 못 찾았어요. 공유기 설정에서 UPnP를 켜거나 직접 포트포워딩하세요. (중계 주소는 계속 사용 가능)")
+                return
+            }
+            if (!u.addPortMapping(port, "MC Server (phone)")) {
+                log("[공유기] 포트 열기 실패. 공유기 설정에서 UPnP가 꺼져 있을 수 있어요.")
+                return
+            }
+            if (state != ServerState.RUNNING) { u.deletePortMapping(port); return } // 그새 서버가 꺼짐
+            upnp = u
+            upnpPort = port
+            val ext = u.externalIp()
+            when {
+                ext == null -> log("[공유기] 포트는 열었지만 공인 IP를 알 수 없어요.")
+                Upnp.isPrivate(ext) -> log("[공유기] 포트는 열었지만 공유기가 또 다른 공유기 뒤에 있어요(이중 공유기, $ext). 직접 접속은 안 될 수 있어요.")
+                state != ServerState.RUNNING -> {}
+                else -> {
+                    directAddress = "$ext:$port"
+                    log("[공유기] 직접 접속 주소(핑 낮음): $ext:$port")
+                    setState(state)
+                }
+            }
+        } catch (e: Exception) {
+            log("[공유기] 오류: ${e.message}")
+        }
+    }
+
+    private fun closeRouterPort() {
+        directAddress = null
+        val u = upnp ?: return
+        val port = upnpPort
+        upnp = null
+        Thread { u.deletePortMapping(port) }.start()
     }
 
     private fun startTunnel(ctx: Context, port: Int) {
