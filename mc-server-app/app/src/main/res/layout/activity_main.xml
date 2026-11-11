@@ -31,6 +31,32 @@
         android:textSize="14sp" />
 
     <LinearLayout
+        android:id="@+id/publicBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="#1A2333"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/publicAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#FFC857"
+            android:textIsSelectable="true"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <Button
+            android:id="@+id/copy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="복사" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -119,6 +145,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="마인크래프트 EULA(aka.ms/MinecraftEULA)에 동의합니다"
+            android:textColor="#F5F7FB"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/tunnel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌍 외부 접속 허용 (다른 와이파이/LTE 친구도 접속)"
             android:textColor="#F5F7FB"
             android:textSize="13sp" />
     </LinearLayout>

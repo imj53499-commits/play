@@ -28,6 +28,9 @@ class MainActivity : Activity() {
     private lateinit var ram: EditText
     private lateinit var port: EditText
     private lateinit var eula: CheckBox
+    private lateinit var tunnel: CheckBox
+    private lateinit var publicBox: View
+    private lateinit var publicAddress: TextView
     private lateinit var start: Button
     private lateinit var stop: Button
     private lateinit var console: TextView
@@ -58,6 +61,9 @@ class MainActivity : Activity() {
         ram = findViewById(R.id.ram)
         port = findViewById(R.id.port)
         eula = findViewById(R.id.eula)
+        tunnel = findViewById(R.id.tunnel)
+        publicBox = findViewById(R.id.publicBox)
+        publicAddress = findViewById(R.id.publicAddress)
         start = findViewById(R.id.start)
         stop = findViewById(R.id.stop)
         console = findViewById(R.id.console)
@@ -70,6 +76,14 @@ class MainActivity : Activity() {
         ram.setText(prefs.getInt("ram", defaultRam()).toString())
         port.setText(prefs.getInt("port", 25565).toString())
         eula.isChecked = prefs.getBoolean("eula", false)
+        tunnel.isChecked = prefs.getBoolean("tunnel", true)
+
+        findViewById<Button>(R.id.copy).setOnClickListener {
+            val addr = ServerManager.publicAddress ?: return@setOnClickListener
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            cm.setPrimaryClip(android.content.ClipData.newPlainText("서버 주소", addr))
+            toast("복사됨: $addr — 친구에게 보내주세요!")
+        }
 
         findViewById<Button>(R.id.latest).setOnClickListener {
             Thread {
@@ -126,11 +140,12 @@ class MainActivity : Activity() {
             version = version.text.toString().trim(),
             ramMb = ramMb,
             port = portNum,
+            tunnel = tunnel.isChecked,
         )
         getSharedPreferences("cfg", Context.MODE_PRIVATE).edit()
             .putString("type", cfg.type).putString("version", cfg.version)
             .putInt("ram", cfg.ramMb).putInt("port", cfg.port)
-            .putBoolean("eula", true).apply()
+            .putBoolean("eula", true).putBoolean("tunnel", cfg.tunnel).apply()
 
         ServerManager.start(this, cfg)
         startForegroundService(Intent(this, ServerService::class.java))
@@ -158,9 +173,13 @@ class MainActivity : Activity() {
         address.text = if (ips.isEmpty()) "와이파이에 연결하면 접속 주소가 표시됩니다"
         else "같은 와이파이에서 접속: " + ips.joinToString("  ") { "$it:$p" }
 
+        val pub = ServerManager.publicAddress
+        publicBox.visibility = if (pub != null && s == ServerState.RUNNING) View.VISIBLE else View.GONE
+        publicAddress.text = "🌍 외부 접속 주소: $pub"
+
         val idle = s == ServerState.STOPPED
         settings.isEnabled = idle
-        listOf(version, ram, port, eula).forEach { it.isEnabled = idle }
+        listOf(version, ram, port, eula, tunnel).forEach { it.isEnabled = idle }
         for (i in 0 until type.childCount) type.getChildAt(i).isEnabled = idle
         start.isEnabled = idle
         stop.isEnabled = s == ServerState.RUNNING

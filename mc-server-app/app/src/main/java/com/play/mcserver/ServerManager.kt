@@ -23,6 +23,7 @@ data class ServerConfig(
     val version: String,
     val ramMb: Int,
     val port: Int,
+    val tunnel: Boolean,
 )
 
 /** 서버 프로세스와 콘솔 로그를 관리하는 싱글톤. */
@@ -39,6 +40,11 @@ object ServerManager {
         private set
 
     private var process: Process? = null
+    @Volatile private var tunnel: BoreTunnel? = null
+
+    /** 외부(다른 IP)에서 접속할 수 있는 터널 주소. 없으면 null */
+    @Volatile var publicAddress: String? = null
+        private set
     private var stdin: OutputStreamWriter? = null
 
     fun serverDir(ctx: Context): File =
@@ -74,6 +80,7 @@ object ServerManager {
                 val jar = Downloader.ensureServerJar(dir, cfg) { log(it) }
                 prepareFiles(dir, cfg)
                 launch(app, runtime, dir, jar, cfg)
+                if (cfg.tunnel) startTunnel(app, cfg.port)
             } catch (t: Throwable) {
                 log("[앱] 오류: ${t.message ?: t.javaClass.simpleName}")
                 setState(ServerState.STOPPED)
@@ -144,10 +151,31 @@ object ServerManager {
             }
             val code = try { p.waitFor() } catch (_: InterruptedException) { -1 }
             log("[앱] 서버가 종료됨 (코드 $code)")
+            tunnel?.stop()
+            tunnel = null
             process = null
             stdin = null
             setState(ServerState.STOPPED)
         }, "mc-output").start()
+    }
+
+    private fun startTunnel(ctx: Context, port: Int) {
+        if (state != ServerState.RUNNING) return
+        val prefs = ctx.getSharedPreferences("cfg", Context.MODE_PRIVATE)
+        log("[터널] 외부 접속용 터널 여는 중... (${BoreTunnel.DEFAULT_HOST})")
+        tunnel = BoreTunnel(
+            host = BoreTunnel.DEFAULT_HOST,
+            targetPort = port,
+            preferredPort = prefs.getInt("tunnelPort", 0),
+            log = { log(it) },
+            onAddress = { addr ->
+                publicAddress = addr
+                addr?.substringAfterLast(":")?.toIntOrNull()?.let {
+                    prefs.edit().putInt("tunnelPort", it).apply()
+                }
+                setState(state) // 화면 갱신
+            },
+        ).also { it.start() }
     }
 
     fun sendCommand(command: String) {
